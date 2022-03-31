@@ -1,0 +1,65 @@
+version: "3.8"
+
+x-service-variables: &service-variables
+  ECTNZ_SERVICE_INSECURE: "1"
+  ECTNZ_KEYS_KEK: "0000000000000000000000000000000000000000000000000000000000000000"
+  ECTNZ_KEYS_AEK: "0000000000000000000000000000000000000000000000000000000000000001"
+  ECTNZ_KEYS_TEK: "0000000000000000000000000000000000000000000000000000000000000002"
+  ECTNZ_KEYS_UEK: "0000000000000000000000000000000000000000000000000000000000000003"
+  ECTNZ_KEYS_GEK: "0000000000000000000000000000000000000000000000000000000000000004"
+
+  # Auth storage
+  ECTNZ_AUTHSTORAGE_USERNAME: "postgres"
+  ECTNZ_AUTHSTORAGE_PASSWORD: &auth_storage_password "password"
+  ECTNZ_AUTHSTORAGE_HOST: "auth-storage"
+  ECTNZ_AUTHSTORAGE_PORT: "5432"
+  ECTNZ_AUTHSTORAGE_DATABASE: "postgres"
+  ECTNZ_AUTHSTORAGE_SSLMODE: "disable"
+  ECTNZ_AUTHSTORAGE_SCHEMA: "/data/auth_storage_basic.sql"
+
+  # Object storage
+  ECTNZ_OBJECTSTORAGE_URL: "http://object-storage:9000"
+  ECTNZ_OBJECTSTORAGE_ID: &storage_id "storageid"
+  ECTNZ_OBJECTSTORAGE_KEY: &storage_key "storagekey"
+
+  # Service flags
+  ECTNZ_FEATURES_ENCRYPTIONSERVICE: "true"
+  ECTNZ_FEATURES_STORAGESERVICE: "true"
+
+services:
+  encryption-service:
+    image: cybercryptcom/encryptonize-core:v3.2.0
+    environment:
+      <<: *service-variables
+    ports:
+      - 9000:9000
+    depends_on:
+      - auth-storage
+      - object-storage
+    tty: true
+
+  auth-storage:
+    image: postgres:13
+    environment:
+      POSTGRES_PASSWORD: *auth_storage_password
+
+  object-storage:
+    image: minio/minio
+    environment:
+      MINIO_ACCESS_KEY: *storage_id
+      MINIO_SECRET_KEY: *storage_key
+    command: server /data
+
+  object-storage-init:
+    image: minio/mc
+    environment:
+      MINIO_ACCESS_KEY: *storage_id
+      MINIO_SECRET_KEY: *storage_key
+    entrypoint: |
+      /bin/sh -c "
+        sleep 5
+        /usr/bin/mc config host add --api s3v4 storage http://object-storage:9000 $${MINIO_ACCESS_KEY} $${MINIO_SECRET_KEY};
+        /usr/bin/mc mb storage/objects/;
+        /usr/bin/mc policy set public storage/objects"
+    depends_on:
+      - object-storage
