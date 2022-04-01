@@ -11,7 +11,7 @@ const config = {
   url: "http://localhost:3000/",
   baseUrl: "/",
   onBrokenLinks: "warn",
-  onBrokenMarkdownLinks: "warn",
+  onBrokenMarkdownLinks: "throw",
   favicon: "img/rook-favicon-3.ico",
   organizationName: "cyber-crypt-com", // Usually your GitHub org/user name.
   projectName: "encryptonize-core", // Usually your repo name.
@@ -112,10 +112,6 @@ const config = {
           {
             title: "More",
             items: [
-              {
-                label: "Blog",
-                to: "/blog",
-              },
               {
                 label: "GitHub",
                 href: "https://github.com/facebook/docusaurus",
