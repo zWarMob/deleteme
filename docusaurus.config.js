@@ -8,9 +8,9 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 const config = {
   title: "Encryptonize DB",
   tagline: "Secure management of sensitive data across cloud environments",
-  url: "localhost:3000",
+  url: "http://localhost:3000/",
   baseUrl: "/",
-  onBrokenLinks: "throw",
+  onBrokenLinks: "warn",
   onBrokenMarkdownLinks: "warn",
   favicon: "img/rook-favicon-3.ico",
   organizationName: "cyber-crypt-com", // Usually your GitHub org/user name.
