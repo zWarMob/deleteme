@@ -1,0 +1,29 @@
+https://r-pkgs.org/
+
+if (!exists(".Secrets_initialized")) {
+  .Secrets_initialized <- TRUE
+  check_required_keys <- function(required_keys) {
+    missing_keys <- character()
+
+    for (key in required_keys) {
+      if (!nzchar(.Sys.getenv(key))) {
+        missing_keys <- c(missing_keys, key)
+      }
+    }
+
+    if (length(missing_keys) > 0) {
+      stop(paste0("Missing API keys: ", paste(missing_keys, collapse = ", ")))
+    }
+  }
+
+  edit_env <- function(){
+    library(usethis)
+    edit_r_environ("project")
+  }
+
+  .Sys.getenv <- Sys.getenv
+  Sys.getenv <- function(key){
+    check_required_keys(c(key))
+    invisible(.Sys.getenv(key))
+  }
+}
